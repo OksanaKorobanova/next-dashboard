@@ -68,11 +68,11 @@ export async function POST(req: Request) {
       );
     } else {
       try {
-        // const hashedPassword = await hashPassword(password);
+        const hashedPassword = await hashPassword(password);
 
         const newUser: newUser = {
           email,
-          password,
+          password: hashedPassword,
         };
 
         const result = await registerUser(client, newUser);

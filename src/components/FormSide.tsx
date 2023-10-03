@@ -30,7 +30,7 @@ export default function FormSide({ isLogin = true }: FormSideProps) {
   const text = isLogin ? 'Sign in' : 'Sign out';
 
   async function createUser(newUser: User) {
-    const response = await fetch('/api/auth', {
+    const response = await fetch('/api/user', {
       method: 'POST',
       body: JSON.stringify(newUser),
       headers: {

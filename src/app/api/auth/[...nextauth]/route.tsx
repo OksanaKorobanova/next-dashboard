@@ -11,7 +11,7 @@ declare module 'next-auth' {
 }
 
 export const authOptions: NextAuthOptions = {
-  session: { strategy: 'jwt' },
+  session: { strategy: 'jwt' }, // default
   // Configure one or more authentication providers
   providers: [
     CredentialsProvider({
@@ -42,6 +42,21 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+  pages: {
+    signIn: '/login',
+  },
+  callbacks: {
+    async jwt({ token, account }) {
+      if (account) {
+        token.accessToken = account.access_token;
+      }
+      return token;
+    },
+    async session({ session, token, user }) {
+      // Send properties to the client, like an access_token from a provider.
+      return session;
+    },
+  },
 };
 
 const handler = NextAuth(authOptions);
