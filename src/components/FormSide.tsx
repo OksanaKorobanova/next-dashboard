@@ -1,14 +1,17 @@
 'use client';
-import { useState } from 'react';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
+import {
+  Avatar,
+  Button,
+  TextField,
+  Paper,
+  Box,
+  Grid,
+  Typography,
+} from '@mui/material';
 import Link from 'next/link';
-import Paper from '@mui/material/Paper';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
+import { useRouter } from 'next/navigation';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import Typography from '@mui/material/Typography';
+import { signIn } from 'next-auth/react';
 
 type FormSideProps = {
   isLogin: Boolean;
@@ -19,6 +22,7 @@ type User = {
 };
 
 export default function FormSide({ isLogin = true }: FormSideProps) {
+  const router = useRouter();
   const linkText = isLogin
     ? "Don't have an account? Sign Up"
     : 'Already have an account? Sign In';
@@ -39,21 +43,25 @@ export default function FormSide({ isLogin = true }: FormSideProps) {
       throw new Error(data.message || 'Something went wrong');
     }
 
-    return data;
+    router.push('/login');
   }
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
 
+    const user: User = {
+      email: data.get('email') as string,
+      password: data.get('password') as string,
+    };
+
     if (isLogin) {
-      // auth user
-      // create user
+      await signIn('credentials', {
+        email: user.email,
+        password: user.password,
+        redirect: false,
+      });
     } else {
-      const user: User = {
-        email: data.get('email') as string,
-        password: data.get('password') as string,
-      };
       createUser(user);
     }
   };

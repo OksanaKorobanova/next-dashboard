@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { connectDb, registerUser } from '@/helpers/db';
+import { connectDb, getUser, registerUser } from '@/helpers/db';
 import { hashPassword } from '@/helpers/auth';
 
 export async function POST(req: Request) {
@@ -40,36 +40,64 @@ export async function POST(req: Request) {
       );
     }
 
+    let existingUser;
+
+    // check if is uniq email
     try {
-      const hashedPassword = await hashPassword(password);
-
-      const newUser: newUser = {
-        email,
-        password: hashedPassword,
-      };
-
-      const result = await registerUser(client, newUser);
-
-      return NextResponse.json(
-        {
-          message: 'Message Sent',
-          data: { ...newUser, id: result.insertedId },
-        },
-        {
-          status: 201,
-        }
-      );
+      existingUser = await getUser(client, email);
     } catch (error) {
       return NextResponse.json(
         {
-          message: 'Sign up failed',
+          message: 'Something went wrong',
         },
         {
           status: 500,
         }
       );
-    } finally {
+    }
+
+    if (existingUser) {
       client.close();
+      return NextResponse.json(
+        {
+          message: 'User already exists',
+        },
+        {
+          status: 422,
+        }
+      );
+    } else {
+      try {
+        // const hashedPassword = await hashPassword(password);
+
+        const newUser: newUser = {
+          email,
+          password,
+        };
+
+        const result = await registerUser(client, newUser);
+
+        return NextResponse.json(
+          {
+            message: 'Message Sent',
+            data: { ...newUser, id: result.insertedId },
+          },
+          {
+            status: 201,
+          }
+        );
+      } catch (error) {
+        return NextResponse.json(
+          {
+            message: 'Sign up failed',
+          },
+          {
+            status: 500,
+          }
+        );
+      } finally {
+        client.close();
+      }
     }
   }
 }

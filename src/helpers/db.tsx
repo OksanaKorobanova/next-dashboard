@@ -12,6 +12,16 @@ type newUser = {
   password: string;
 };
 
+export async function getUser(client: MongoClient, userEmail: string) {
+  const db = client.db(process.env.DB_NAME);
+
+  const existingUser = await db
+    .collection('users')
+    .findOne({ email: userEmail });
+
+  return existingUser;
+}
+
 export async function registerUser(client: MongoClient, newUser: newUser) {
   const db = client.db(process.env.DB_NAME);
 
