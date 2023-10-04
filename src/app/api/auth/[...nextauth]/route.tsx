@@ -2,16 +2,10 @@ import { verifyPassword } from '@/helpers/auth';
 import { connectDb, getUser } from '@/helpers/db';
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { ObjectId } from 'mongodb';
-
-declare module 'next-auth' {
-  interface User {
-    id: ObjectId;
-  }
-}
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: 'jwt' }, // default
+  secret: process.env.NEXTAUTH_SECRET,
   // Configure one or more authentication providers
   providers: [
     CredentialsProvider({
@@ -46,15 +40,34 @@ export const authOptions: NextAuthOptions = {
     signIn: '/login',
   },
   callbacks: {
-    async jwt({ token, account }) {
-      if (account) {
-        token.accessToken = account.access_token;
+    async jwt({ token, user, session, trigger }) {
+      console.log('jwt callback', { token, user, session });
+
+      // example how to update name
+      if (trigger === 'update' && session.name) {
+        return {
+          ...token,
+          name: session.name,
+        };
+      }
+
+      if (user) {
+        // pass user data (id, email) to token
+        return { ...token, ...user };
       }
       return token;
+      // return { ...token, ...user };
     },
     async session({ session, token, user }) {
-      // Send properties to the client, like an access_token from a provider.
-      return session;
+      console.log('session callback', { session, token, user });
+      // pass user data ( id, email) to session
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: token.id,
+        },
+      };
     },
   },
 };

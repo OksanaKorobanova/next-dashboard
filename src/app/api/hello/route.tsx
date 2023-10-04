@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getSession } from 'next-auth/react';
+import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/route';
 
 export async function GET(req: Request) {
-  const session = await getSession();
+  const session = await getServerSession(authOptions);
+  console.log(session);
 
   if (!session) {
     return NextResponse.json(

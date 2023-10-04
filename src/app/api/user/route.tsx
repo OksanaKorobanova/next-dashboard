@@ -79,7 +79,7 @@ export async function POST(req: Request) {
 
         return NextResponse.json(
           {
-            message: 'Message Sent',
+            message: 'User created',
             data: { ...newUser, id: result.insertedId },
           },
           {
